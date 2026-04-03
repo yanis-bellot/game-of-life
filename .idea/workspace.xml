@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="56ecce9d-aaac-4628-b50a-448b4e113add" name="Changes" comment="" />
+    <list default="true" id="56ecce9d-aaac-4628-b50a-448b4e113add" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -33,7 +35,7 @@
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "ai.playground.ignore.import.keys.banner.in.settings": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "Merging main",
     "last_opened_file_path": "/home/yanis/devs/GameOfLife",
     "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
@@ -60,7 +62,7 @@
       <option name="presentableId" value="Default" />
       <updated>1768404006050</updated>
       <workItem from="1769601317253" duration="788000" />
-      <workItem from="1775221424767" duration="398000" />
+      <workItem from="1775221424767" duration="741000" />
     </task>
     <servers />
   </component>
