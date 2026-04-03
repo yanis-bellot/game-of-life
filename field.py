@@ -1,28 +1,40 @@
 class Field:
 
-    #size :: [x :: int ,y :: int] , rules :: [living threshold :: int , dying threshold :: [int, int...]]
+    #size :: [x :: int ,y :: int] , rules :: [living threshold :: [int; int...9] , dying map :: [int, int...9]]
     def __init__(self, size, rules):
         self.name = "Field of play"
         self.value = [[0 for i in range(size[0])] for j in range(size[1])]
         self.rules = rules
 
-    def refresh(self):
-        for lines in self.value:
-            for i in range(len(lines)):
-                pass
 
-
-    def is_alive(self, x, y):
-        if self.value[y][x] == 0:
-            return False
+    def is_alive(self, field, x, y):
+        if x >= 0 and y >= 0:
+            if field[y][x] == 0:
+                return False
+            else:
+                return True
         else:
-            return True
+            return False
 
 
-    def check_neighbors_alive(self, x, y):
+    def check_alive_neighbors(self, field, x, y):
         alive_neighbors = 0
+        directions = [(0, -1),(0, 1),(-1, 0),(1, 0), (1, 1), (1,-1), (-1, 1), (-1, -1)]
+        for dx, dy in directions:
+            neighbor_x, neighbor_y = x + dx, y + dy
+            if self.is_alive(field, neighbor_x, neighbor_y):
+                alive_neighbors += 1
+        return alive_neighbors
 
 
-    def check_neighbors(self, x, y):
-        if self.is_alive(x, y):
-            pass
+    def refresh(self):
+        value_before = self.value
+        for y in range(len(value_before)):
+            for x in range(len(value_before[y])):
+                if self.is_alive(value_before, x, y):
+                    value_before[y][x] = self.rules[1][self.check_alive_neighbors(value_before, x, y)]
+                else:
+                    value_before[y][x] = self.rules[0][self.check_alive_neighbors(value_before, x, y)]
+
+        self.value = value_before
+        return self.value
