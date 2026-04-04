@@ -5,10 +5,11 @@ class Field:
         self.name = "Field of play"
         self.value = [[0 for i in range(size[0])] for j in range(size[1])]
         self.rules = rules
+        self.gen_count = 0
 
 
     def is_alive(self, field, x, y):
-        if x >= 0 and y >= 0:
+        if 0 <= x < len(self.value[0]) and 0 <= y < len(self.value):
             if field[y][x] == 0:
                 return False
             else:
@@ -37,4 +38,5 @@ class Field:
                     value_before[y][x] = self.rules[0][self.check_alive_neighbors(value_before, x, y)]
 
         self.value = value_before
+        self.gen_count += 1
         return self.value
