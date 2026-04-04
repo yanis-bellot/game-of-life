@@ -7,6 +7,9 @@ class Field:
         self.rules = rules
         self.gen_count = 0
 
+    def reset(self):
+        self.value = [[0 for i in range(len(self.value[0]))] for j in range(len(self.value))]
+        self.gen_count = 0
 
     def is_alive(self, x, y):
         if 0 <= x < len(self.value[0]) and 0 <= y < len(self.value):

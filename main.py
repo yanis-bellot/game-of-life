@@ -1,5 +1,6 @@
 import pygame
 import field
+import renderer
 
 SCREEN_W, SCREEN_H = 1000, 800
 SIDEBAR_W = 200
@@ -16,20 +17,44 @@ COLOR_TEXT = (255, 255, 255)
 rules_standard = [[0,0,0,1,0,0,0,0,0],[0,0,1,1,0,0,0,0,0]]
 
 def main():
+
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
     pygame.display.set_caption("Game of Life")
     font = pygame.font.SysFont("Arial", 18)
 
     grid = field.Field([COLS, ROWS], rules_standard)
+    view = renderer.UIRenderer(screen, font, SIDEBAR_W, RES)
+
     playing = False
     fps = 30
     running = True
     last_mouse_pos = None
+    rule_buttons = []
+    start_y_rules = 380
+    for r_idx in range(2):
+        for n_neighbors in range(9):
+            rect = pygame.Rect(20 + n_neighbors * 18, start_y_rules + r_idx * 45, 14, 14)
+            rule_buttons.append({
+                "rect": rect,
+                "r_idx": r_idx,
+                "val": n_neighbors,
+                "label": str(n_neighbors)
+            })
+    PRESETS = {
+        "Conway": [[0, 0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 1, 1, 0, 0, 0, 0, 0]],
+        "Seeds": [[0, 0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        "HighLife": [[0, 0, 0, 1, 0, 0, 1, 0, 0], [0, 0, 1, 1, 0, 0, 0, 0, 0]],
+        "Maze": [[0, 0, 0, 1, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 0, 0, 0]]
+    }
+
+    current_preset = "Conway"
+    menu_open = False
+    dropdown_rect = pygame.Rect(20, 480, 160, 30)
 
     while running:
-        screen.fill(COLOR_BG)
         keys = pygame.key.get_pressed()
+
 
         if keys[pygame.K_UP]:
             fps += 0.4  # Augmentation progressive
@@ -41,18 +66,42 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    mouse_pos = event.pos
+                    for btn in rule_buttons:
+                        if btn["rect"].collidepoint(mouse_pos):
+                            r, v = btn["r_idx"], btn["val"]
+                            grid.rules[r][v] = 1 - grid.rules[r][v]
+
+                    if dropdown_rect.collidepoint(mouse_pos):
+                        menu_open = not menu_open
+                    elif menu_open:
+                        for i, name in enumerate(PRESETS.keys()):
+                            opt_rect = pygame.Rect(dropdown_rect.x, dropdown_rect.y + (i + 1) * 30, dropdown_rect.width,
+                                                   30)
+                            if opt_rect.collidepoint(mouse_pos):
+                                grid.rules = [list(r) for r in PRESETS[name]]
+                                current_preset = name
+                                menu_open = False
+                                grid.reset()
+                                playing = False
+                                break
+                        else:
+                            menu_open = False
+
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     playing = not playing
 
                 if not playing:
                     if event.key == pygame.K_c:
-                        grid = field.Field([COLS, ROWS], rules_standard)
+                        grid.reset()
 
         mx, my = pygame.mouse.get_pos()
         mouse_left = pygame.mouse.get_pressed()[0]
         mouse_right = pygame.mouse.get_pressed()[2]
-
         if mouse_left or mouse_right:
             if mx > SIDEBAR_W:
                 if last_mouse_pos is None:
@@ -78,28 +127,20 @@ def main():
         if playing:
             grid.refresh()
 
-        for x in range(COLS):
-            for y in range(ROWS):
-                if grid.value[y][x] == 1:
-                    pygame.draw.rect(screen, COLOR_ALIVE,(SIDEBAR_W + x * RES, y * RES, RES - 1, RES - 1))
+        screen.fill(COLOR_BG)
+        view.draw_grid(grid.value)
+        stats = {"gen": grid.gen_count,
+                 "fps": int(fps),
+                 "playing": "PLAY" if playing else "PAUSE"
+        }
 
-        pygame.draw.rect(screen, COLOR_SIDEBAR, (0, 0, SIDEBAR_W, SCREEN_H))
-
-        labels = [
-                f"Statut: {'PLAY' if playing else 'PAUSE'}",
-                f"Génération: {grid.gen_count}",
-                f"Vitesse (FPS): {int(fps)}",
-                "",
-                "COMMANDES:",
-                "[ESPACE] : Play/Pause",
-                "[C] : Effacer",
-                "[HAUT/BAS] : Vitesse",
-                "SOURIS : Dessiner"
-        ]
-
-        for i, text in enumerate(labels):
-            img = font.render(text, True, COLOR_TEXT)
-            screen.blit(img, (20, 30 + i * 30))
+        dropdown_info = {
+            "rect": dropdown_rect,
+            "current_name": current_preset,
+            "options": list(PRESETS.keys()),
+            "is_open": menu_open
+        }
+        view.draw_sidebar(stats, rule_buttons, grid.rules, dropdown_info)
 
         pygame.display.flip()
         pygame.time.Clock().tick(fps if playing else 60)
