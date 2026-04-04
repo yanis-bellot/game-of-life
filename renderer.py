@@ -1,4 +1,5 @@
 import pygame
+import numpy as np
 
 
 class UIRenderer:
@@ -16,11 +17,13 @@ class UIRenderer:
         }
 
     def draw_grid(self, grid_value):
-        for y, row in enumerate(grid_value):
-            for x, cell in enumerate(row):
-                if cell == 1:
-                    pygame.draw.rect(self.screen, self.colors["alive"],
-                                     (self.sidebar_w + x * self.res, y * self.res, self.res - 1, self.res - 1))
+        rgb_array = np.zeros((grid_value.shape[1], grid_value.shape[0], 3), dtype=np.uint8)
+        rgb_array[grid_value.T == 1] = self.colors["alive"]
+        small_surf = pygame.surfarray.make_surface(rgb_array)
+        full_width = grid_value.shape[1] * self.res
+        full_height = grid_value.shape[0] * self.res
+        scaled_surf = pygame.transform.scale(small_surf, (full_width, full_height))
+        self.screen.blit(scaled_surf, (self.sidebar_w, 0))
 
     def draw_sidebar(self, stats, rule_buttons, rules, dropdown_info, input_info):
         pygame.draw.rect(self.screen, self.colors["sidebar"], (0, 0, self.sidebar_w, 800))

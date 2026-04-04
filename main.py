@@ -1,3 +1,4 @@
+import numpy as np
 import pygame
 import field
 import renderer
@@ -81,7 +82,7 @@ def main():
                         for i, name in enumerate(PRESETS.keys()):
                             opt_rect = pygame.Rect(dropdown_rect.x, dropdown_rect.y + (i + 1) * 30, dropdown_rect.width, 30)
                             if opt_rect.collidepoint(mouse_pos):
-                                grid.rules = [list(r) for r in PRESETS[name]]
+                                grid.rules = [np.array(r, dtype=np.int8) for r in PRESETS[name]]
                                 current_preset = name
                                 menu_open = False
                                 grid.reset()
@@ -137,8 +138,8 @@ def main():
                     gx = int((lerp_x - SIDEBAR_W) // RES)
                     gy = int(lerp_y // RES)
 
-                    if 0 <= gy < len(grid.value) and 0 <= gx < len(grid.value[0]):
-                        grid.value[gy][gx] = 1 if mouse_left else 0
+                    if 0 <= gy < grid.value.shape[0] and 0 <= gx < grid.value.shape[1]:
+                        grid.value[gy, gx] = 1 if mouse_left else 0
 
                 last_mouse_pos = (mx, my)
         else:
