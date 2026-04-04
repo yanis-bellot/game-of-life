@@ -5,11 +5,12 @@ class Field:
         self.name = "Field of play"
         self.value = [[0 for i in range(size[0])] for j in range(size[1])]
         self.rules = rules
+        self.gen_count = 0
 
 
-    def is_alive(self, field, x, y):
-        if x >= 0 and y >= 0:
-            if field[y][x] == 0:
+    def is_alive(self, x, y):
+        if 0 <= x < len(self.value[0]) and 0 <= y < len(self.value):
+            if self.value[y][x] == 0:
                 return False
             else:
                 return True
@@ -17,24 +18,25 @@ class Field:
             return False
 
 
-    def check_alive_neighbors(self, field, x, y):
+    def check_alive_neighbors(self, x, y):
         alive_neighbors = 0
         directions = [(0, -1),(0, 1),(-1, 0),(1, 0), (1, 1), (1,-1), (-1, 1), (-1, -1)]
         for dx, dy in directions:
             neighbor_x, neighbor_y = x + dx, y + dy
-            if self.is_alive(field, neighbor_x, neighbor_y):
+            if self.is_alive(neighbor_x, neighbor_y):
                 alive_neighbors += 1
         return alive_neighbors
 
 
     def refresh(self):
-        value_before = self.value
-        for y in range(len(value_before)):
-            for x in range(len(value_before[y])):
-                if self.is_alive(value_before, x, y):
-                    value_before[y][x] = self.rules[1][self.check_alive_neighbors(value_before, x, y)]
+        new_value = [[0 for i in range(len(self.value[0]))] for j in range(len(self.value))]
+        for y in range(len(self.value)):
+            for x in range(len(self.value[y])):
+                if self.is_alive(x, y):
+                    new_value[y][x] = self.rules[1][self.check_alive_neighbors(x, y)]
                 else:
-                    value_before[y][x] = self.rules[0][self.check_alive_neighbors(value_before, x, y)]
+                    new_value[y][x] = self.rules[0][self.check_alive_neighbors(x, y)]
 
-        self.value = value_before
+        self.value = new_value
+        self.gen_count += 1
         return self.value
