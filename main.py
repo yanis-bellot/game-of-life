@@ -8,6 +8,7 @@ RES = 10
 GRID_W = SCREEN_W - SIDEBAR_W
 COLS, ROWS = GRID_W // RES, SCREEN_H // RES
 
+
 COLOR_BG = (30, 30, 35)
 COLOR_SIDEBAR = (45, 45, 50)
 COLOR_ALIVE = (0, 255, 150)
@@ -20,10 +21,11 @@ def main():
     pygame.display.set_caption("Game of Life")
     font = pygame.font.SysFont("Arial", 18)
 
-    grid = field.Field([GRID_W, SCREEN_H], rules_standard)
+    grid = field.Field([COLS, ROWS], rules_standard)
     playing = False
-    fps = 10
+    fps = 30
     running = True
+    last_mouse_pos = None
 
     while running:
         screen.fill(COLOR_BG)
@@ -45,18 +47,33 @@ def main():
 
                 if not playing:
                     if event.key == pygame.K_c:
-                        grid = field.Field([GRID_W, SCREEN_H], rules_standard)
+                        grid = field.Field([COLS, ROWS], rules_standard)
 
+        mx, my = pygame.mouse.get_pos()
+        mouse_left = pygame.mouse.get_pressed()[0]
+        mouse_right = pygame.mouse.get_pressed()[2]
 
-        if pygame.mouse.get_pressed()[0]:
-            mx, my = pygame.mouse.get_pos()
+        if mouse_left or mouse_right:
             if mx > SIDEBAR_W:
-                grid.value[my // RES][(mx - SIDEBAR_W) // RES] = 1
+                if last_mouse_pos is None:
+                    last_mouse_pos = (mx, my)
 
-        if pygame.mouse.get_pressed()[1]:
-            mx, my = pygame.mouse.get_pos()
-            if mx > SIDEBAR_W:
-                grid.value[my // RES][(mx - SIDEBAR_W) // RES] = 0
+                start_x, start_y = last_mouse_pos
+                dist = max(abs(mx - start_x), abs(my - start_y), 1)
+
+                for i in range(dist + 1):
+                    lerp_x = start_x + (mx - start_x) * (i / dist)
+                    lerp_y = start_y + (my - start_y) * (i / dist)
+
+                    gx = int((lerp_x - SIDEBAR_W) // RES)
+                    gy = int(lerp_y // RES)
+
+                    if 0 <= gx < COLS and 0 <= gy < ROWS:
+                        grid.value[gy][gx] = 1 if mouse_left else 0
+
+                last_mouse_pos = (mx, my)
+        else:
+            last_mouse_pos = None
 
         if playing:
             grid.refresh()
