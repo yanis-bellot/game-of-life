@@ -22,7 +22,7 @@ class UIRenderer:
                     pygame.draw.rect(self.screen, self.colors["alive"],
                                      (self.sidebar_w + x * self.res, y * self.res, self.res - 1, self.res - 1))
 
-    def draw_sidebar(self, stats, rule_buttons, rules, dropdown_info):
+    def draw_sidebar(self, stats, rule_buttons, rules, dropdown_info, input_info):
         pygame.draw.rect(self.screen, self.colors["sidebar"], (0, 0, self.sidebar_w, 800))
 
         labels = [
@@ -46,6 +46,11 @@ class UIRenderer:
 
 
         self.draw_rule_selectors(rules, rule_buttons)
+        self.draw_input_box(
+            input_info["rect"],
+            input_info["text"],
+            input_info["active"]
+        )
         self.draw_dropdown(
             dropdown_info['rect'],
             dropdown_info['current_name'],
@@ -67,7 +72,6 @@ class UIRenderer:
                 num_txt = self.font.render(btn["label"], True, (150, 150, 150))
                 self.screen.blit(num_txt, (btn["rect"].x + 2, base_y + 60))
 
-
     def draw_dropdown(self, rect, current_name, options, is_open):
         pygame.draw.rect(self.screen, (60, 60, 70), rect)
         pygame.draw.rect(self.screen, (200, 200, 200), rect, 1)
@@ -84,3 +88,15 @@ class UIRenderer:
                 opt_txt = self.font.render(name, True, self.colors["text"])
                 self.screen.blit(opt_txt, (opt_rect.x + 10, opt_rect.y + 5))
 
+    def draw_input_box(self, rect, text, is_active):
+        title = self.font.render("Taille Cellule (px):", True, self.colors["text"])
+        self.screen.blit(title, (rect.x, rect.y - 25))
+
+        color = (100, 100, 110) if is_active else (60, 60, 70)
+        pygame.draw.rect(self.screen, color, rect)
+
+        border_color = (0, 255, 150) if is_active else (150, 150, 150)
+        pygame.draw.rect(self.screen, border_color, rect, 2)
+
+        txt_surface = self.font.render(text, True, self.colors["text"])
+        self.screen.blit(txt_surface, (rect.x + 10, rect.y + 5))

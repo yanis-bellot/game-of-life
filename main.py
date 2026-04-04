@@ -2,21 +2,19 @@ import pygame
 import field
 import renderer
 
-SCREEN_W, SCREEN_H = 1000, 800
-SIDEBAR_W = 200
-RES = 10
-
-GRID_W = SCREEN_W - SIDEBAR_W
-COLS, ROWS = GRID_W // RES, SCREEN_H // RES
 
 
-COLOR_BG = (30, 30, 35)
-COLOR_SIDEBAR = (45, 45, 50)
-COLOR_ALIVE = (0, 255, 150)
-COLOR_TEXT = (255, 255, 255)
-rules_standard = [[0,0,0,1,0,0,0,0,0],[0,0,1,1,0,0,0,0,0]]
+
+
 
 def main():
+    SCREEN_W, SCREEN_H = 1080, 720
+    SIDEBAR_W = 200
+    RES = 10
+    GRID_W = SCREEN_W - SIDEBAR_W
+    COLS, ROWS = GRID_W // RES, SCREEN_H // RES
+    COLOR_BG = (30, 30, 35)
+    rules_standard = [[0, 0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 1, 1, 0, 0, 0, 0, 0]]
 
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
@@ -51,7 +49,9 @@ def main():
     current_preset = "Conway"
     menu_open = False
     dropdown_rect = pygame.Rect(20, 480, 160, 30)
-
+    input_rect = pygame.Rect(20, 550, 160, 32)
+    input_text = str(RES)
+    input_active = False
     while running:
         keys = pygame.key.get_pressed()
 
@@ -69,6 +69,7 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     mouse_pos = event.pos
+                    input_active = input_rect.collidepoint(event.pos)
                     for btn in rule_buttons:
                         if btn["rect"].collidepoint(mouse_pos):
                             r, v = btn["r_idx"], btn["val"]
@@ -78,8 +79,7 @@ def main():
                         menu_open = not menu_open
                     elif menu_open:
                         for i, name in enumerate(PRESETS.keys()):
-                            opt_rect = pygame.Rect(dropdown_rect.x, dropdown_rect.y + (i + 1) * 30, dropdown_rect.width,
-                                                   30)
+                            opt_rect = pygame.Rect(dropdown_rect.x, dropdown_rect.y + (i + 1) * 30, dropdown_rect.width, 30)
                             if opt_rect.collidepoint(mouse_pos):
                                 grid.rules = [list(r) for r in PRESETS[name]]
                                 current_preset = name
@@ -96,6 +96,26 @@ def main():
                     playing = not playing
 
                 if not playing:
+                    if input_active:
+                        if event.key == pygame.K_RETURN:
+                            try:
+                                new_res = int(input_text)
+                                if 2 <= new_res <= 100:
+                                    RES = new_res
+                                    COLS, ROWS = GRID_W // RES, SCREEN_H // RES
+                                    grid = field.Field([COLS, ROWS], grid.rules)
+                                    view.res = RES
+                                    last_mouse_pos = None
+                            except ValueError:
+                                input_text = str(RES)
+                            input_active = False
+
+                        elif event.key == pygame.K_BACKSPACE:
+                            input_text = input_text[:-1]
+                        else:
+                            if event.unicode.isdigit():
+                                input_text += event.unicode
+
                     if event.key == pygame.K_c:
                         grid.reset()
 
@@ -117,7 +137,7 @@ def main():
                     gx = int((lerp_x - SIDEBAR_W) // RES)
                     gy = int(lerp_y // RES)
 
-                    if 0 <= gx < COLS and 0 <= gy < ROWS:
+                    if 0 <= gy < len(grid.value) and 0 <= gx < len(grid.value[0]):
                         grid.value[gy][gx] = 1 if mouse_left else 0
 
                 last_mouse_pos = (mx, my)
@@ -129,9 +149,10 @@ def main():
 
         screen.fill(COLOR_BG)
         view.draw_grid(grid.value)
-        stats = {"gen": grid.gen_count,
-                 "fps": int(fps),
-                 "playing": "PLAY" if playing else "PAUSE"
+        stats = {
+            "gen": grid.gen_count,
+            "fps": int(fps),
+            "playing": "PLAY" if playing else "PAUSE"
         }
 
         dropdown_info = {
@@ -140,7 +161,13 @@ def main():
             "options": list(PRESETS.keys()),
             "is_open": menu_open
         }
-        view.draw_sidebar(stats, rule_buttons, grid.rules, dropdown_info)
+        input_info = {
+            "rect": input_rect,
+            "text": input_text,
+            "active": input_active
+        }
+
+        view.draw_sidebar(stats, rule_buttons, grid.rules, dropdown_info, input_info)
 
         pygame.display.flip()
         pygame.time.Clock().tick(fps if playing else 60)
