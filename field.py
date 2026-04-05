@@ -1,4 +1,5 @@
 import numpy as np
+import scipy
 
 
 class Field:
@@ -30,3 +31,9 @@ class Field:
 
         self.value = new_value
         self.gen_count += 1
+
+    def get_pockets(self):
+        dead_mask = (self.value == 0)
+        structure = np.ones((3, 3), dtype=int)
+        label_map, num_pockets = label(dead_mask, structure=structure)
+        return label_map, num_pockets
