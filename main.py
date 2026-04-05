@@ -30,7 +30,7 @@ def main():
     running = True
     last_mouse_pos = None
     rule_buttons = []
-    start_y_rules = 380
+    start_y_rules = 440
     for r_idx in range(2):
         for n_neighbors in range(9):
             rect = pygame.Rect(20 + n_neighbors * 18, start_y_rules + r_idx * 45, 14, 14)
@@ -48,9 +48,15 @@ def main():
     }
 
     current_preset = "Conway"
+    STATE_SANDBOX, STATE_ANALYSIS = 0, 1
+    current_state = STATE_SANDBOX
+    ALGOS = ["A*", "BFS", "Dijkstra"]
+    current_algo = "A*"
+    SUBMODE_FINDER, SUBMODE_GROUPER, SUBMODE_TUNNELER = 0, 1, 2
+    current_submode = "Grouper"
     menu_open = False
-    dropdown_rect = pygame.Rect(20, 480, 160, 30)
-    input_rect = pygame.Rect(20, 550, 160, 32)
+    dropdown_rect = pygame.Rect(20, 530, 160, 30)
+    input_rect = pygame.Rect(20, 650, 160, 32)
     input_text = str(RES)
     input_active = False
     while running:
@@ -95,6 +101,10 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     playing = not playing
+
+                if event.key == pygame.K_a and current_state == STATE_SANDBOX:
+                    current_state = STATE_ANALYSIS
+                    playing = False
 
                 if not playing:
                     if input_active:
@@ -149,26 +159,37 @@ def main():
             grid.refresh()
 
         screen.fill(COLOR_BG)
-        view.draw_grid(grid.value)
+        view.draw_grid(grid.value, current_state)
         stats = {
             "gen": grid.gen_count,
             "fps": int(fps),
             "playing": "PLAY" if playing else "PAUSE"
         }
 
-        dropdown_info = {
-            "rect": dropdown_rect,
-            "current_name": current_preset,
-            "options": list(PRESETS.keys()),
-            "is_open": menu_open
-        }
+        if current_state == STATE_SANDBOX:
+            dropdown_info = {
+                "rect": dropdown_rect,
+                "title": "Mode",
+                "current": current_preset,
+                "options": list(PRESETS.keys()),
+                "is_open": menu_open
+            }
+        else:  # On est en mode FINDER
+            dropdown_info = {
+                "rect": dropdown_rect,
+                "title": "Algo",
+                "current": current_algo,
+                "options": ALGOS,
+                "is_open": menu_open
+            }
+
         input_info = {
             "rect": input_rect,
             "text": input_text,
             "active": input_active
         }
 
-        view.draw_sidebar(stats, rule_buttons, grid.rules, dropdown_info, input_info)
+        view.draw_sidebar(stats, rule_buttons, grid.rules, dropdown_info, input_info, current_state, current_submode)
 
         pygame.display.flip()
         pygame.time.Clock().tick(fps if playing else 60)
