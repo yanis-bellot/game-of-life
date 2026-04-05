@@ -10,7 +10,7 @@ import renderer
 
 def main():
     SCREEN_W, SCREEN_H = 1080, 720
-    SIDEBAR_W = 200
+    SIDEBAR_W = 250
     RES = 10
     GRID_W = SCREEN_W - SIDEBAR_W
     COLS, ROWS = GRID_W // RES, SCREEN_H // RES
@@ -59,6 +59,7 @@ def main():
     input_rect = pygame.Rect(20, 650, 160, 32)
     input_text = str(RES)
     input_active = False
+
     while running:
         keys = pygame.key.get_pressed()
 
@@ -105,6 +106,9 @@ def main():
                 if event.key == pygame.K_a and current_state == STATE_SANDBOX:
                     current_state = STATE_ANALYSIS
                     playing = False
+                if event.key == pygame.K_s and current_state == STATE_ANALYSIS:
+                    current_state = STATE_SANDBOX
+
 
                 if not playing:
                     if input_active:

@@ -19,11 +19,11 @@ class UIRenderer:
             "subtext": (150, 150, 150)
         },{
             "bg": (30, 30, 35),
-            "sidebar": (45, 45, 50),
+            "sidebar": (240, 140, 140),
             "alive": (0, 255, 150),
-            "text": (200, 200, 200),
+            "text": (250, 190, 190),
             "inactive_boxes": (70, 70, 75),
-            "subtext": (150, 150, 150)
+            "subtext": (245, 230, 230)
         }]
 
     def draw_grid(self, grid_value, current_state):
@@ -74,11 +74,15 @@ class UIRenderer:
             f"ANALYSIS MODE ({current_submode})",
             "",
             "COMMANDES:",
-            "[ESPACE] : Play/Pause",
             "C : Changer de sous-mode",
             "S : Mode Sandbox",
-            "",
+            "SOURIS: Chemin",
         ]
+        pygame.draw.rect(self.screen, self.colors[1]["sidebar"], (0, 0, self.sidebar_w, 800))
+        for i, txt in enumerate(labels):
+            if txt:
+                img = self.font.render(txt, True, self.colors[1]["text"])
+                self.screen.blit(img, (20, 30 + i * 30))
         self.draw_dropdown(dropdown_info)
 
     def draw_sidebar(self, stats, rule_buttons, rules, dropdown_info, input_info ,current_state, current_submode):
